@@ -2,6 +2,7 @@
   "name": "@runhare/node",
   "version": "0.1.0",
   "description": "",
+  "private": "false",
   "main": "build/index.js",
   "module": "build/index.es.js",
   "jsnext:main": "build/index.es.js",
