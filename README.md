@@ -14,8 +14,6 @@ To send a Background Task Event you will create a Client and use it to fire the 
 ```typescript
 import { createClient } from '@runhare/node'
 
-const SENDKEY = process.env.SENDKEY
-
 interface SendEmail {
   to: string
   subject: string
@@ -26,7 +24,7 @@ interface DemoEvents {
   'send-email': SendEmail
 }
 
-const client = createClient<DemoEvents>('la329bg', SENDKEY, 'demo')
+const client = createClient<DemoEvents>('la329bg', process.env.SENDKEY, 'demo')
 
 client
   .sendEvent('send-email', {
@@ -96,3 +94,149 @@ export declare const createClient: <EventTypes>(
 - **status** : `"queued"` | `"pre-queued"`
 - **event** : Event identifier as defined on RunHare's console.
 - **priority** : `"normal"` | `"high"`
+
+## Consuming Events
+
+RunHare sends events to registered HTTP endpoints where your consumer functions receive the payloads according to the event types they are registered. As such, consumers live inside a HTTP server handler, preferably using a framework.
+
+```typescript
+interface SendEmail {
+  to: string
+  subject: string
+  content: string
+}
+
+interface DemoEvents {
+  'send-email': SendEmail
+}
+
+const consumer = createConsumer<DemoEvents>(process.env.SENDKEY)
+
+const sendEmailHandler = consumer.createHandler(
+  ['send-email'],
+  async (
+    event,
+    payload: SendEmail,
+    headers: any
+  ): Promise<ConsumerResponse> => {
+    await EmailClient.sendEmail(payload)
+    return { result: 'sucess' }
+  }
+)
+
+const payload = {
+  to: 'john@gmail.com',
+  subject: 'Hello',
+  world: 'World'
+}
+
+const signature = signPayload(payload, process.env.SENDKEY)
+
+const response = await handler(payload, {
+  ...signature.headers,
+  'x-runhare-event': 'dothis'
+})
+```
+
+We provide wrappers for ExpressJS and NextJS.
+
+### ExpressJS
+
+```javascript
+const express = require('express')
+const consumer = require('@runhare/express')
+
+const sendEmailHandler = async (event, payload, headers) => {
+  await EmailClient.sendEmail(payload)
+  return { result: 'sucess' }
+}
+
+app.post(
+  '/send-email',
+  consumer(['send-email'], process.env.SENDKEY, sendEmailHandler)
+)
+
+app.listen(3000, () => {
+  console.log(`Email consumer listening at http://localhost:${port}`)
+})
+```
+
+### NextJs
+
+```typescript
+// 'src/pages/api/send-email.ts'
+import consumer from '@runhare/next'
+
+interface SendEmail {
+  to: string
+  subject: string
+  content: string
+}
+
+interface DemoEvents {
+  'send-email': SendEmail
+}
+
+export default consumer([
+  'send-email',
+  process.env.SENDKEY,
+  async (
+    event,
+    payload: SendEmail,
+    headers: any
+  ): Promise<ConsumerResponse> => {
+    await EmailClient.sendEmail(payload)
+    return { result: 'sucess' }
+  }
+])
+```
+
+### API Reference
+
+Exported types
+
+```typescript
+export interface ConsumerOptions {
+  rejectUnregisteredMessages?: boolean
+}
+export interface EventSuccess {
+  result: 'sucess'
+}
+export interface EventFailed {
+  result: 'fail'
+  error: string
+}
+export declare type ConsumerResponse = EventSuccess | EventFailed
+export declare const createConsumer: <EventTypes>(
+  sendKey?: string | undefined,
+  options?: ConsumerOptions | undefined
+) => {
+  createHandler: <K extends keyof EventTypes>(
+    events: K[],
+    consumer: (
+      event: K,
+      payload: EventTypes[K],
+      headers?: PayloadHeaders | undefined
+    ) => Promise<ConsumerResponse>
+  ) => (
+    payload: EventTypes[K],
+    headers?: PayloadHeaders | undefined
+  ) => Promise<ConsumerResponse>
+}
+```
+
+`createConsumer<T>(sendKey?, options?)`
+
+- **sendKey** : Shared secret used to verify messages signatures.
+- **options.rejectUnregisteredMessages** : If set, messages received not in the subscription list will be marked as failed (potentially retrying them)
+
+`createHandler(events, consumer) -> handler(event, payload, headers)`
+
+- **events** : Array of subscribed event types
+- **consumer** : Asynchronous Consumer function
+
+Returns Handler function
+
+- **event** : Received event
+- **payload** : Clean payload
+- **headers** : Request headers
