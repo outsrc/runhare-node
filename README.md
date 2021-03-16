@@ -97,7 +97,12 @@ export declare const createClient: <EventTypes>(
 
 ## Consuming Events
 
-RunHare sends events to registered HTTP endpoints where your consumer functions receive the payloads according to the event types they are registered. As such, consumers live inside a HTTP server handler, preferably using a framework.
+RunHare sends events to registered HTTP endpoints (POST, GET) where your consumer functions receive the payloads according to the event types they are registered. As such, consumers live inside a HTTP server handler, preferably using a framework.
+
+HTTP handlers should respond to 2 methods:
+
+- POST to receive event messages
+- GET to query about consumer health and metadata (SDK related)
 
 ```typescript
 interface SendEmail {
@@ -151,7 +156,7 @@ const sendEmailHandler = async (event, payload, headers) => {
   return { result: 'sucess' }
 }
 
-app.post(
+app.use(
   '/send-email',
   consumer(['send-email'], process.env.SENDKEY, sendEmailHandler)
 )
