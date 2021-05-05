@@ -125,7 +125,7 @@ export const createClient = <EventTypes>(
 
       return response.data
     } catch (ex) {
-      throw new Error('message-failed')
+      throw new Error(`message-failed:${ex.message}`)
     }
   }
 

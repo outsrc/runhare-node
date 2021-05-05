@@ -158,7 +158,7 @@ describe('RunHare Client', () => {
       })
       .catch(error => {
         expect(error).toBeTruthy()
-        expect(error.message).toBe('message-failed')
+        expect(error.message).toBe('message-failed:failed')
       })
     scope.done()
   })
