@@ -162,4 +162,40 @@ describe('RunHare Client', () => {
       })
     scope.done()
   })
+
+  it('sends event, with tracer', async () => {
+    const scope = nock('https://harex.in')
+      .post(`/${mockNamespace}`, {
+        type: 'dothis',
+        data: { what: 'Run it', when: 'Now' },
+        priority: 'normal',
+        origin: 'test-suite'
+      })
+      .reply(200, {
+        status: 'queued',
+        message: 'dothis',
+        priority: 'normal'
+      } as RunHareResponse<TestEvents>)
+
+    const mockTracer = jest.fn()
+
+    const client = createClient<TestEvents>(
+      mockNamespace,
+      mockSendKey,
+      'test-suite',
+      mockTracer
+    )
+    const response = await client.sendEvent('dothis', {
+      what: 'Run it',
+      when: 'Now'
+    })
+
+    expect(response).toEqual({
+      status: 'queued',
+      message: 'dothis',
+      priority: 'normal'
+    })
+    expect(mockTracer).toBeCalled()
+    scope.done()
+  })
 })

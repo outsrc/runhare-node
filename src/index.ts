@@ -94,7 +94,8 @@ export interface PayloadHeaders {
 export const createClient = <EventTypes>(
   namespace: string,
   sendKey?: string,
-  origin?: string
+  origin?: string,
+  tracer?: (payload: any, headers: any) => void
 ) => {
   const sendEvent = async <K extends keyof EventTypes>(
     event: K,
@@ -115,6 +116,11 @@ export const createClient = <EventTypes>(
         payload,
         sendKey || ''
       )
+
+      if (tracer) {
+        tracer(payload, signature.headers)
+      }
+
       const response = await axios.post<RunHareResponse<EventTypes>>(
         `https://harex.in/${namespace}`,
         signature.payload,
