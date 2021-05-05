@@ -26,7 +26,7 @@ export interface PayloadHeaders {
     'x-runhare-event'?: string;
     [key: string]: string | undefined;
 }
-export declare const createClient: <EventTypes>(namespace: string, sendKey?: string | undefined, origin?: string | undefined, tracer?: ((payload: any, headers: any) => void) | undefined) => {
+export declare const createClient: <EventTypes>(namespace: string, sendKey?: string | undefined, origin?: string | undefined, ttl?: number | undefined, tracer?: ((payload: any, headers: any) => void) | undefined) => {
     sendEvent: <K extends keyof EventTypes>(event: K, message: EventTypes[K], priority?: RunHareEventPriority, signal?: boolean | undefined) => Promise<RunHareResponse<EventTypes>>;
 };
 export interface ConsumerOptions {

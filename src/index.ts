@@ -95,6 +95,7 @@ export const createClient = <EventTypes>(
   namespace: string,
   sendKey?: string,
   origin?: string,
+  ttl?: number,
   tracer?: (payload: any, headers: any) => void
 ) => {
   const sendEvent = async <K extends keyof EventTypes>(
@@ -114,7 +115,8 @@ export const createClient = <EventTypes>(
 
       const signature: RunHarePayloadSignature = signPayload(
         payload,
-        sendKey || ''
+        sendKey || '',
+        ttl
       )
 
       if (tracer) {

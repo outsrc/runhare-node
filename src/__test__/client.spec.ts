@@ -183,6 +183,7 @@ describe('RunHare Client', () => {
       mockNamespace,
       mockSendKey,
       'test-suite',
+      2000,
       mockTracer
     )
     const response = await client.sendEvent('dothis', {
