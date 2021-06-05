@@ -24,6 +24,7 @@ export interface PayloadHeaders {
     'x-runhare-auth'?: string;
     'x-runhare-auth-expiry'?: string;
     'x-runhare-event'?: string;
+    'x-runhare-event-id'?: string;
     [key: string]: string | undefined;
 }
 export declare const createClient: <EventTypes>(namespace: string, sendKey?: string | undefined, origin?: string | undefined, ttl?: number | undefined, tracer?: ((payload: any, headers: any) => void) | undefined) => {

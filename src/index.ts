@@ -88,6 +88,7 @@ export interface PayloadHeaders {
   'x-runhare-auth'?: string
   'x-runhare-auth-expiry'?: string
   'x-runhare-event'?: string
+  'x-runhare-event-id'?: string
   [key: string]: string | undefined
 }
 
